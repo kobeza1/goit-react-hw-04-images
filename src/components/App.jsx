@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Searchbar from './Searchbar/Searchbar';
+import { Searchbar } from './Searchbar/Searchbar';
 import { fetchImages } from 'utils/api-service';
 import { propFilter } from 'utils/prop-filter';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Container } from './App.styled';
 import { Button } from './Button/Button';
 import { Loader } from './Loader/Loader';
-import Modal from './Modal/Modal';
+import { Modal } from './Modal/Modal';
 
 const App = () => {
   const [images, setImages] = useState([]);

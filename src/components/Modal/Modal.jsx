@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Overlay, ModalStyled } from './Modal.styled';
 
-const Modal = ({ onClose, currentImage }) => {
+export const Modal = ({ onClose, currentImage }) => {
   const onClosebyBackdrop = event => {
     if (event.target === event.currentTarget) {
       onClose();
@@ -40,5 +40,3 @@ Modal.propTypes = {
     tags: PropTypes.string.isRequired,
   }),
 };
-
-export default Modal;
