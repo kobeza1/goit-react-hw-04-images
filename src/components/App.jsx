@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
+import React, { useState, useEffect } from 'react';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Searchbar from './Searchbar/Searchbar';
 import { fetchImages } from 'utils/api-service';
@@ -10,110 +10,70 @@ import { Button } from './Button/Button';
 import { Loader } from './Loader/Loader';
 import Modal from './Modal/Modal';
 
-class App extends Component {
-  state = {
-    images: [],
-    query: '',
-    page: 1,
-    isLoading: false,
-    currentImage: null,
-  };
+const App = () => {
+  const [images, setImages] = useState([]);
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentImage, setCurrentImage] = useState(null);
 
-  componentDidUpdate(prevProps, prevState) {
-    const { query, page } = this.state;
-
-    if (prevState.query !== query) {
-      this.getImages();
+  useEffect(() => {
+    if (query === '') {
+      return;
     }
-    if (prevState.page !== page && page !== 1) {
-      this.getMoreImages();
-    }
-  }
-
-  onSubmit = query => {
-    this.setState({ query: query, page: 1, isLoading: true });
-  };
-
-  getImages = async () => {
-    const { page, query } = this.state;
-
-    await fetchImages(page, query)
-      .then(response => {
+    const fetchData = async () => {
+      try {
+        const response = await fetchImages(page, query);
         const {
           data: { hits },
         } = response;
-        if (hits.length === 0) {
-          return toast('There are no images');
-        }
-        this.setState({
-          images: [...propFilter(hits)],
-        });
-      })
-      .catch(error => {
+        if (page !== 1) {
+          setImages(state => [...state, ...propFilter(hits)]);
+        } else setImages([...propFilter(hits)]);
+      } catch (error) {
         console.log(error);
-      })
-      .finally(() => {
-        this.setState({ isLoading: false });
-      });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, [page, query]);
+
+  const onSubmit = query => {
+    setQuery(query);
+    setPage(1);
+    setIsLoading(true);
   };
 
-  getMoreImages = async () => {
-    this.setState({ isLoading: true });
-    const { page, query } = this.state;
-
-    await fetchImages(page, query)
-      .then(response => {
-        const {
-          data: { hits },
-        } = response;
-        this.setState(prevState => ({
-          images: [...prevState.images, ...propFilter(hits)],
-        }));
-      })
-      .catch(error => {
-        console.log(error);
-      })
-      .finally(() => {
-        this.setState({ isLoading: false });
-      });
+  const pageIncrement = () => {
+    setPage(state => state + 1);
+    setIsLoading(true);
   };
 
-  pageIncrement = () => {
-    const { page } = this.state;
-    this.setState({ page: page + 1, isLoading: true });
+  const openModal = image => {
+    setCurrentImage(image);
   };
 
-  openModal = image => {
-    this.setState({ currentImage: image });
+  const closeModal = () => {
+    setCurrentImage(null);
   };
 
-  closeModal = () => {
-    this.setState({
-      currentImage: null,
-    });
-  };
-
-  render() {
-    return (
-      <Container>
-        <Searchbar onSubmit={this.onSubmit} />
-        {this.state.images.length !== 0 && (
-          <>
-            <ImageGallery images={this.state.images} onClick={this.openModal} />
-            <Button text="Load more" onClick={this.pageIncrement} />
-          </>
-        )}
-        {this.state.isLoading && <Loader />}
-        {this.state.currentImage && (
-          <Modal
-            currentImage={this.state.currentImage}
-            onClose={this.closeModal}
-          />
-        )}
-        <ToastContainer />
-      </Container>
-    );
-  }
-}
+  return (
+    <Container>
+      <Searchbar onSubmit={onSubmit} />
+      {images.length !== 0 && (
+        <>
+          <ImageGallery images={images} onClick={openModal} />
+          <Button text="Load more" onClick={pageIncrement} />
+        </>
+      )}
+      {isLoading && <Loader />}
+      {currentImage && (
+        <Modal currentImage={currentImage} onClose={closeModal} />
+      )}
+      <ToastContainer />
+    </Container>
+  );
+};
 
 export default App;
