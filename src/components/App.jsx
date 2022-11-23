@@ -23,13 +23,13 @@ const App = () => {
     }
     const fetchData = async () => {
       try {
+        setIsLoading(true);
+
         const response = await fetchImages(page, query);
         const {
           data: { hits },
         } = response;
-        if (page !== 1) {
-          setImages(state => [...state, ...propFilter(hits)]);
-        } else setImages([...propFilter(hits)]);
+        setImages(state => [...state, ...propFilter(hits)]);
       } catch (error) {
         console.log(error);
       } finally {
@@ -41,13 +41,12 @@ const App = () => {
 
   const onSubmit = query => {
     setQuery(query);
+    setImages([]);
     setPage(1);
-    setIsLoading(true);
   };
 
   const pageIncrement = () => {
     setPage(state => state + 1);
-    setIsLoading(true);
   };
 
   const openModal = image => {
